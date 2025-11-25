@@ -2,8 +2,8 @@ name: Invoke API
 
 on:
   schedule:
-    - cron: '11 1,5,10,11,12,14,16,17,,20,22 * * *'
-  # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#providing-inputs
+    # 修复了双逗号错误
+    - cron: '11 1,5,10,11,12,14,16,17,20,22 * * *'
   workflow_dispatch:
     inputs:
       unconditional-invoking:
@@ -12,43 +12,11 @@ on:
         required: true
         default: true
 
-# https://github.com/actions/checkout/issues/19
 jobs:
-  #   Random:
-  #     runs-on: ubuntu-latest
-  #     outputs:
-  #       runnable: ${{ steps.decision.outputs.runnable }}
-  #     steps:
-  #       - name: Checkout code
-  #         uses: actions/checkout@v3
-  #         with:
-  #           ref: master
-  #           token: ${{ secrets.PAT }}
-
-  #       - name: Pull upstream
-  #         run: bash wrapper.sh pull sync
-
-  #       - name: Commit and push
-  #         run: bash wrapper.sh push "sync with upstream"
-
-  #       - name: Make a decision
-  #         id: decision
-  #         env:
-  #           PASSWD: ${{ secrets.PASSWD }}
-  #         run: |
-  #           sum=$(cksum <<< "$PASSWD" | cut -f1 -d' ')
-  #           m=$(date "+%-m")
-  #           d=$(date "+%-d")
-  #           h=$(date "+%-H")
-  #           [ $(((d + m + sum) % 6)) = 1 ] && exit 0
-  #           [ $(((h + d + sum) & 1)) = 1 ] && exit 0
-  #           echo "::set-output name=runnable::true"
-
   Invoke:
     runs-on: ubuntu-latest
-    if: ${{ github.event.repository.private }}
-    # needs: Random
-    # if: needs.Random.outputs.runnable == 'true'
+    # 删除了私有仓库检查
+    # if: ${{ github.event.repository.private }}
 
     steps:
       - name: Checkout code
@@ -56,9 +24,6 @@ jobs:
         with:
           ref: master
           token: ${{ secrets.PAT }}
-
-  #    - name: Sync with upstream
-  #      run: bash wrapper.sh pull
 
       - name: Check config files
         env:
@@ -85,7 +50,6 @@ jobs:
           h=$(date "+%-H")
           [ $(((d + m + sum) % 6)) = 1 ] && exit 0
           [ $(((h + d + sum) & 1)) = 1 ] && exit 0
-          # echo "::set-output name=runnable::true"
           echo "runnable=true" >> $GITHUB_OUTPUT
 
       - name: Set up python
